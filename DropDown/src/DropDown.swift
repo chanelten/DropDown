@@ -858,6 +858,9 @@ extension DropDown {
 		self.translatesAutoresizingMaskIntoConstraints = false
 		visibleWindow?.addUniversalConstraints(format: "|[dropDown]|", views: ["dropDown": self])
 
+		tableView.reloadData()
+		tableView.layoutIfNeeded()
+
 		let layout = computeLayout()
 
 		if !layout.canBeDisplayed {
@@ -1030,7 +1033,7 @@ extension DropDown {
 
 	/// Returns the height needed to display all cells.
 	fileprivate var tableHeight: CGFloat {
-		return tableView.rowHeight * CGFloat(dataSource.count)
+		return tableView.contentSize.height
 	}
 
     //MARK: Objective-C methods for converting the Swift type Index
@@ -1068,6 +1071,14 @@ extension DropDown: UITableViewDataSource, UITableViewDelegate {
 		return cell
 	}
 	
+	public func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+		return UITableView.automaticDimension
+	}
+
+	public func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+		return cellHeight
+	}
+
 	fileprivate func configureCell(_ cell: DropDownCell, at index: Int) {
 		if index >= 0 && index < localizationKeysDataSource.count {
 			cell.accessibilityIdentifier = localizationKeysDataSource[index]
@@ -1075,9 +1086,11 @@ extension DropDown: UITableViewDataSource, UITableViewDelegate {
 		
 		cell.optionLabel.textColor = textColor
 		cell.optionLabel.font = textFont
+		cell.optionLabel.numberOfLines = 0
+		cell.optionLabel.lineBreakMode = .byWordWrapping
 		cell.selectedBackgroundColor = selectionBackgroundColor
-        cell.highlightTextColor = selectedTextColor
-        cell.normalTextColor = textColor
+		cell.highlightTextColor = selectedTextColor
+		cell.normalTextColor = textColor
 		
 		if let cellConfiguration = cellConfiguration {
 			cell.optionLabel.text = cellConfiguration(index, dataSource[index])
